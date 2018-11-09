@@ -1,0 +1,21 @@
+FROM microsoft/windowsservercore:1803 AS builder
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
+ENV chocolateyUseWindowsCompression true
+
+RUN iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex
+
+RUN choco install ruby git -y
+
+USER ContainerAdministrator
+RUN setx /M PATH $('C:\tools\ruby25\bin;C:\Program Files\Git\bin;' + $env:path)
+
+RUN gem install --no-ri --no-rdoc bundler \
+    pdk
+
+RUN mkdir C:/repo
+WORKDIR C:/repo
+
+ENTRYPOINT [ "powershell" ]
+CMD [ "pdk", "help"]
